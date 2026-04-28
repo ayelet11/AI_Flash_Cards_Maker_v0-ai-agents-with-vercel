@@ -14,7 +14,7 @@ export function Flashcard({ question, answer, index }: FlashcardProps) {
 
   return (
     <div
-      className="group perspective-1000 h-48 cursor-pointer"
+      className="group perspective-1000 h-64 cursor-pointer"
       onClick={() => setIsFlipped(!isFlipped)}
     >
       <div
@@ -28,9 +28,11 @@ export function Flashcard({ question, answer, index }: FlashcardProps) {
           <span className="text-xs font-medium text-muted-foreground mb-2">
             Card {index + 1} - Question
           </span>
-          <p className="flex-1 flex items-center justify-center text-center text-foreground font-medium">
-            {question}
-          </p>
+          <div className="flex-1 overflow-y-auto flex items-center justify-center">
+            <p className="text-center text-foreground font-medium">
+              {question}
+            </p>
+          </div>
           <span className="text-xs text-muted-foreground text-center mt-2">
             Click to reveal answer
           </span>
@@ -41,9 +43,11 @@ export function Flashcard({ question, answer, index }: FlashcardProps) {
           <span className="text-xs font-medium text-primary mb-2">
             Card {index + 1} - Answer
           </span>
-          <p className="flex-1 flex items-center justify-center text-center text-foreground">
-            {answer}
-          </p>
+          <div className="flex-1 overflow-y-auto flex items-center justify-center">
+            <p className="text-center text-foreground">
+              {answer}
+            </p>
+          </div>
           <span className="text-xs text-muted-foreground text-center mt-2">
             Click to see question
           </span>
