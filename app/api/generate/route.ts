@@ -124,7 +124,7 @@ Generate exactly ${cardCount} flashcards.`
       try {
         const google = getGoogleProvider(apiKey)
         const result = await generateText({
-          model: google('gemini-2.0-flash'),
+          model: google('gemini-2.5-flash'),
           output: Output.object({ schema: FlashcardSchema }),
           prompt,
         })
