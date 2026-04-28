@@ -12,9 +12,16 @@ interface FlashcardData {
 
 export default function Home() {
   const [flashcards, setFlashcards] = useState<FlashcardData[]>([])
+  const [isDemo, setIsDemo] = useState(false)
+
+  const handleGenerate = (cards: FlashcardData[], demo: boolean) => {
+    setFlashcards(cards)
+    setIsDemo(demo)
+  }
 
   const handleReset = () => {
     setFlashcards([])
+    setIsDemo(false)
   }
 
   return (
@@ -36,9 +43,16 @@ export default function Home() {
         {/* Main Content */}
         <div className="rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8">
           {flashcards.length === 0 ? (
-            <GeneratorForm onGenerate={setFlashcards} />
+            <GeneratorForm onGenerate={handleGenerate} />
           ) : (
-            <FlashcardList flashcards={flashcards} onReset={handleReset} />
+            <>
+              {isDemo && (
+                <div className="mb-6 rounded-lg border border-amber-500/50 bg-amber-500/10 p-4 text-center text-sm text-amber-700 dark:text-amber-400">
+                  Demo Mode: Add your GOOGLE_GENERATIVE_AI_API_KEY in project settings to generate real flashcards.
+                </div>
+              )}
+              <FlashcardList flashcards={flashcards} onReset={handleReset} />
+            </>
           )}
         </div>
 

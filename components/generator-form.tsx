@@ -8,7 +8,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { AlertCircle, Sparkles } from 'lucide-react'
 
 interface GeneratorFormProps {
-  onGenerate: (flashcards: { question: string; answer: string }[]) => void
+  onGenerate: (flashcards: { question: string; answer: string }[], isDemo: boolean) => void
 }
 
 export function GeneratorForm({ onGenerate }: GeneratorFormProps) {
@@ -37,7 +37,7 @@ export function GeneratorForm({ onGenerate }: GeneratorFormProps) {
       }
 
       setRemaining(data.remaining)
-      onGenerate(data.flashcards)
+      onGenerate(data.flashcards, data.demo === true)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
     } finally {

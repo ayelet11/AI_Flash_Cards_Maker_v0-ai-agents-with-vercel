@@ -51,19 +51,31 @@ export async function POST(req: Request) {
   try {
     const { content, cardCount = 5 } = await req.json()
 
-    if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
-      return Response.json(
-        { error: 'Gemini API key not configured. Please add GOOGLE_GENERATIVE_AI_API_KEY in project settings.' },
-        { status: 503 }
-      )
-    }
-
     if (!content || typeof content !== 'string' || content.trim().length === 0) {
       return Response.json({ error: 'Content is required' }, { status: 400 })
     }
 
     if (content.length > 15000) {
       return Response.json({ error: 'Content too long. Maximum 15,000 characters.' }, { status: 400 })
+    }
+
+    // Demo mode: generate sample flashcards when API key is not configured
+    if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+      const words = content.split(/\s+/).filter(w => w.length > 4)
+      const demoFlashcards = Array.from({ length: Math.min(cardCount, 5) }, (_, i) => ({
+        question: `What is the significance of "${words[i * 2] || 'this concept'}" in the provided text?`,
+        answer: `This is a demo flashcard. Add your GOOGLE_GENERATIVE_AI_API_KEY in project settings to generate real AI-powered flashcards from your content.`,
+      }))
+
+      return Response.json({
+        flashcards: demoFlashcards,
+        remaining,
+        demo: true,
+      }, {
+        headers: {
+          'X-RateLimit-Remaining': remaining.toString(),
+        }
+      })
     }
 
     const result = await generateText({
@@ -77,6 +89,7 @@ Rules:
 - Focus on key concepts, definitions, and important facts
 - Questions should test understanding, not just memorization
 - Vary question types: "What is...", "How does...", "Why...", "Explain..."
+- If the content contains mathematical formulas or symbols, explain them in plain language
 
 Content to analyze:
 ${content}
@@ -87,6 +100,7 @@ Generate exactly ${cardCount} flashcards.`,
     return Response.json({
       flashcards: result.output?.flashcards ?? [],
       remaining,
+      demo: false,
     }, {
       headers: {
         'X-RateLimit-Remaining': remaining.toString(),
