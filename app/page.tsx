@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { GeneratorForm } from '@/components/generator-form'
-import { FlashcardList } from '@/components/flashcard-list'
+import { StudySession } from '@/components/study-session'
 import { BookOpen } from 'lucide-react'
 
 interface FlashcardData {
@@ -17,6 +17,7 @@ export default function Home() {
   const handleGenerate = (cards: FlashcardData[], demo: boolean) => {
     setFlashcards(cards)
     setIsDemo(demo)
+    console.log('[v0] Flashcards generated:', { count: cards.length, demo })
   }
 
   const handleReset = () => {
@@ -36,7 +37,7 @@ export default function Home() {
             Smart Study Cards
           </h1>
           <p className="mt-3 text-pretty text-muted-foreground">
-            Paste your notes or articles and let AI generate interactive flashcards for effective studying.
+            Paste your notes, articles, or URLs and let AI generate interactive flashcards for effective studying.
           </p>
         </header>
 
@@ -51,7 +52,7 @@ export default function Home() {
                   Demo Mode: Add your GOOGLE_GENERATIVE_AI_API_KEY in project settings to generate real flashcards.
                 </div>
               )}
-              <FlashcardList flashcards={flashcards} onReset={handleReset} />
+              <StudySession flashcards={flashcards} onReset={handleReset} />
             </>
           )}
         </div>
