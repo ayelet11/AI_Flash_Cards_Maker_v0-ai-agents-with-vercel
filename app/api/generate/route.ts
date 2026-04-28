@@ -1,4 +1,5 @@
 import { generateText, Output } from 'ai'
+import { google } from '@ai-sdk/google'
 import { Ratelimit } from '@upstash/ratelimit'
 import { Redis } from '@upstash/redis'
 import { z } from 'zod'
@@ -59,7 +60,7 @@ export async function POST(req: Request) {
     }
 
     const result = await generateText({
-      model: 'google/gemini-2.0-flash',
+      model: google('gemini-2.0-flash'),
       output: Output.object({ schema: FlashcardSchema }),
       prompt: `You are an expert educator creating study flashcards. Analyze the following content and create ${cardCount} high-quality flashcards.
 
