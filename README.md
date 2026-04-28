@@ -1,3 +1,4 @@
+## Enjoy this project!
 # AI_Flash_Cards_Maker_v0-ai-agents-with-vercel
 
 This is a [Next.js](https://nextjs.org) project bootstrapped with [v0](https://v0.app).
