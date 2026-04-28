@@ -51,6 +51,13 @@ export async function POST(req: Request) {
   try {
     const { content, cardCount = 5 } = await req.json()
 
+    if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+      return Response.json(
+        { error: 'Gemini API key not configured. Please add GOOGLE_GENERATIVE_AI_API_KEY in project settings.' },
+        { status: 503 }
+      )
+    }
+
     if (!content || typeof content !== 'string' || content.trim().length === 0) {
       return Response.json({ error: 'Content is required' }, { status: 400 })
     }
