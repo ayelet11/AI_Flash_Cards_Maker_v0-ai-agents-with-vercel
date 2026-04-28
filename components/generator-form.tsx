@@ -17,6 +17,7 @@ export function GeneratorForm({ onGenerate }: GeneratorFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [remaining, setRemaining] = useState<number | null>(null)
+  const [debugInfo, setDebugInfo] = useState<Record<string, unknown> | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -37,6 +38,9 @@ export function GeneratorForm({ onGenerate }: GeneratorFormProps) {
       }
 
       setRemaining(data.remaining)
+      if (data.debug) {
+        setDebugInfo(data.debug)
+      }
       onGenerate(data.flashcards, data.demo === true)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
@@ -100,6 +104,13 @@ export function GeneratorForm({ onGenerate }: GeneratorFormProps) {
         <div className="flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
           <AlertCircle className="h-4 w-4 shrink-0" />
           {error}
+        </div>
+      )}
+
+      {debugInfo && (
+        <div className="rounded-lg border border-blue-500/50 bg-blue-500/10 p-3 text-xs text-blue-700 dark:text-blue-400">
+          <p className="font-medium mb-1">Debug Info:</p>
+          <pre className="whitespace-pre-wrap">{JSON.stringify(debugInfo, null, 2)}</pre>
         </div>
       )}
 

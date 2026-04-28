@@ -64,6 +64,16 @@ export async function POST(req: Request) {
       return Response.json({ error: 'Content too long. Maximum 15,000 characters.' }, { status: 400 })
     }
 
+    // Debug: Log which env vars are present
+    const primaryKeyExists = !!process.env.GOOGLE_GENERATIVE_AI_API_KEY
+    const backupKeyExists = !!process.env.GOOGLE_GENERATIVE_AI_API_KEY_BACKUP
+    console.log('[v0] Environment check:', { 
+      primaryKeyExists, 
+      backupKeyExists,
+      primaryKeyLength: process.env.GOOGLE_GENERATIVE_AI_API_KEY?.length ?? 0,
+      backupKeyLength: process.env.GOOGLE_GENERATIVE_AI_API_KEY_BACKUP?.length ?? 0,
+    })
+
     // Demo mode: generate sample flashcards when API key is not configured
     if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
       const words = content.split(/\s+/).filter(w => w.length > 4)
@@ -76,6 +86,7 @@ export async function POST(req: Request) {
         flashcards: demoFlashcards,
         remaining,
         demo: true,
+        debug: { primaryKeyExists, backupKeyExists },
       }, {
         headers: {
           'X-RateLimit-Remaining': remaining.toString(),
