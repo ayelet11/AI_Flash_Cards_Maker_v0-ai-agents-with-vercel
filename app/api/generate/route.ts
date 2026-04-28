@@ -159,8 +159,9 @@ Generate exactly ${cardCount} flashcards.`
     )
   } catch (error) {
     console.error('Error generating flashcards:', error)
+    const errorMessage = error instanceof Error ? error.message : String(error)
     return Response.json(
-      { error: 'Failed to generate flashcards. Please try again.' },
+      { error: `Failed to generate flashcards: ${errorMessage}` },
       { status: 500 }
     )
   }
