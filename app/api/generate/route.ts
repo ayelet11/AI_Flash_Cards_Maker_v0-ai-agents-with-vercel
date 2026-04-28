@@ -1,8 +1,13 @@
 import { generateText, Output } from 'ai'
-import { google } from '@ai-sdk/google'
+import { createGoogleGenerativeAI } from '@ai-sdk/google'
 import { Ratelimit } from '@upstash/ratelimit'
 import { Redis } from '@upstash/redis'
 import { z } from 'zod'
+
+// Helper to create a Google provider with a specific API key
+function getGoogleProvider(apiKey: string) {
+  return createGoogleGenerativeAI({ apiKey })
+}
 
 const redis = new Redis({
   url: process.env.KV_REST_API_URL!,
@@ -78,10 +83,16 @@ export async function POST(req: Request) {
       })
     }
 
-    const result = await generateText({
-      model: google('gemini-2.0-flash'),
-      output: Output.object({ schema: FlashcardSchema }),
-      prompt: `You are an expert educator creating study flashcards. Analyze the following content and create ${cardCount} high-quality flashcards.
+    // Collect available API keys
+    const apiKeys: string[] = []
+    if (process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+      apiKeys.push(process.env.GOOGLE_GENERATIVE_AI_API_KEY)
+    }
+    if (process.env.GOOGLE_GENERATIVE_AI_API_KEY_BACKUP) {
+      apiKeys.push(process.env.GOOGLE_GENERATIVE_AI_API_KEY_BACKUP)
+    }
+
+    const prompt = `You are an expert educator creating study flashcards. Analyze the following content and create ${cardCount} high-quality flashcards.
 
 Rules:
 - Each flashcard should have a clear, specific question
@@ -94,18 +105,47 @@ Rules:
 Content to analyze:
 ${content}
 
-Generate exactly ${cardCount} flashcards.`,
-    })
+Generate exactly ${cardCount} flashcards.`
 
-    return Response.json({
-      flashcards: result.output?.flashcards ?? [],
-      remaining,
-      demo: false,
-    }, {
-      headers: {
-        'X-RateLimit-Remaining': remaining.toString(),
+    // Try each key until one works
+    let lastError: Error | null = null
+    for (const apiKey of apiKeys) {
+      try {
+        const google = getGoogleProvider(apiKey)
+        const result = await generateText({
+          model: google('gemini-2.0-flash'),
+          output: Output.object({ schema: FlashcardSchema }),
+          prompt,
+        })
+
+        return Response.json({
+          flashcards: result.output?.flashcards ?? [],
+          remaining,
+          demo: false,
+        }, {
+          headers: {
+            'X-RateLimit-Remaining': remaining.toString(),
+          }
+        })
+      } catch (error) {
+        lastError = error as Error
+        // If rate limited (429) or quota exceeded, try next key
+        const errorMessage = String(error)
+        if (errorMessage.includes('429') || errorMessage.includes('quota') || errorMessage.includes('RESOURCE_EXHAUSTED')) {
+          console.log('[v0] API key rate limited, trying backup key...')
+          continue
+        }
+        // For other errors, throw immediately
+        throw error
       }
-    })
+    }
+
+    // All keys exhausted
+    console.error('All API keys exhausted:', lastError)
+    return Response.json(
+      { error: 'API quota exceeded on all keys. Please try again later.' },
+      { status: 429 }
+    )
   } catch (error) {
     console.error('Error generating flashcards:', error)
     return Response.json(
