@@ -106,15 +106,7 @@ export async function POST(req: Request) {
       return Response.json({ error: 'Content too long. Maximum 15,000 characters.' }, { status: 400 })
     }
 
-    // Debug: Log which env vars are present
-    const primaryKeyExists = !!process.env.GOOGLE_GENERATIVE_AI_API_KEY
-    const backupKeyExists = !!process.env.GOOGLE_GENERATIVE_AI_API_KEY_BACKUP
-    console.log('[v0] Environment check:', { 
-      primaryKeyExists, 
-      backupKeyExists,
-      primaryKeyLength: process.env.GOOGLE_GENERATIVE_AI_API_KEY?.length ?? 0,
-      backupKeyLength: process.env.GOOGLE_GENERATIVE_AI_API_KEY_BACKUP?.length ?? 0,
-    })
+
 
     // Demo mode: generate sample flashcards when API key is not configured
     if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
@@ -128,7 +120,6 @@ export async function POST(req: Request) {
         flashcards: demoFlashcards,
         remaining,
         demo: true,
-        debug: { primaryKeyExists, backupKeyExists },
       }, {
         headers: {
           'X-RateLimit-Remaining': remaining.toString(),
@@ -147,7 +138,6 @@ export async function POST(req: Request) {
 
     // Detect the primary language of the content
     const languageInfo = detectPrimaryLanguage(content)
-    console.log('[v0] Language detection:', languageInfo)
 
     // Build language instruction based on detected language
     const languageInstruction = languageInfo.isNonEnglish && languageInfo.script
@@ -195,7 +185,6 @@ Generate exactly ${cardCount} flashcards.`
         // If rate limited (429) or quota exceeded, try next key
         const errorMessage = String(error)
         if (errorMessage.includes('429') || errorMessage.includes('quota') || errorMessage.includes('RESOURCE_EXHAUSTED')) {
-          console.log('[v0] API key rate limited, trying backup key...')
           continue
         }
         // For other errors, throw immediately
@@ -204,13 +193,11 @@ Generate exactly ${cardCount} flashcards.`
     }
 
     // All keys exhausted
-    console.error('All API keys exhausted:', lastError)
     return Response.json(
       { error: 'API quota exceeded on all keys. Please try again later.' },
       { status: 429 }
     )
   } catch (error) {
-    console.error('Error generating flashcards:', error)
     const errorMessage = error instanceof Error ? error.message : String(error)
     return Response.json(
       { error: `Failed to generate flashcards: ${errorMessage}` },

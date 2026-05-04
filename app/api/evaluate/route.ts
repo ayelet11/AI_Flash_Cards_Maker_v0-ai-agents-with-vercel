@@ -18,12 +18,6 @@ export async function POST(req: Request) {
   try {
     const { userAnswer, correctAnswer, question } = await req.json()
 
-    console.log('[v0] Evaluating answer:', { 
-      questionLength: question?.length,
-      userAnswerLength: userAnswer?.length,
-      correctAnswerLength: correctAnswer?.length 
-    })
-
     if (!userAnswer || !correctAnswer || !question) {
       return Response.json({ error: 'Missing required fields' }, { status: 400 })
     }
@@ -76,15 +70,12 @@ Provide:
       prompt,
     })
 
-    console.log('[v0] Evaluation result:', result.output)
-
     return Response.json({
       ...result.output,
       demo: false,
     })
 
   } catch (error) {
-    console.error('[v0] Evaluation error:', error)
     const errorMessage = error instanceof Error ? error.message : String(error)
     return Response.json(
       { error: `Failed to evaluate answer: ${errorMessage}` },

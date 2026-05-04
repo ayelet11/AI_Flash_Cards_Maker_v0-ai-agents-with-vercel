@@ -55,7 +55,6 @@ export function useVoiceInput(): UseVoiceInputReturn {
       }
 
       recognitionRef.current.onerror = (event) => {
-        console.error('[v0] Speech recognition error:', event.error)
         setError(`Speech recognition error: ${event.error}`)
         setIsListening(false)
       }
@@ -85,9 +84,7 @@ export function useVoiceInput(): UseVoiceInputReturn {
     try {
       recognitionRef.current.start()
       setIsListening(true)
-      console.log('[v0] Started listening')
-    } catch (err) {
-      console.error('[v0] Failed to start listening:', err)
+    } catch {
       setError('Failed to start voice recognition')
     }
   }, [])
@@ -97,7 +94,6 @@ export function useVoiceInput(): UseVoiceInputReturn {
     
     recognitionRef.current.stop()
     setIsListening(false)
-    console.log('[v0] Stopped listening')
   }, [])
 
   const resetTranscript = useCallback(() => {

@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Spinner } from '@/components/ui/spinner'
-import { Download, RotateCcw, Check, RefreshCw, ChevronLeft, ChevronRight, Mic, MicOff, Volume2 } from 'lucide-react'
+import { Download, RotateCcw, Check, RefreshCw, ChevronLeft, ChevronRight, Mic, MicOff, Volume2, Lightbulb } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useVoiceInput } from '@/hooks/use-voice-input'
 import { Celebration } from '@/components/celebration'
@@ -51,6 +51,8 @@ export function StudySession({ flashcards, onReset }: StudySessionProps) {
   const [voiceMode, setVoiceMode] = useState(false)
   const [isEvaluating, setIsEvaluating] = useState(false)
   const [evaluation, setEvaluation] = useState<Evaluation | null>(null)
+  const [hint, setHint] = useState<string | null>(null)
+  const [isLoadingHint, setIsLoadingHint] = useState(false)
 
   const { isListening, transcript, error: voiceError, isSupported, startListening, stopListening, resetTranscript } = useVoiceInput()
 
@@ -66,16 +68,34 @@ export function StudySession({ flashcards, onReset }: StudySessionProps) {
   const unseenCount = cardStatuses.filter(s => s === 'unseen').length
   const progress = ((flashcards.length - unseenCount) / flashcards.length) * 100
 
-  console.log('[v0] Study session state:', { 
-    currentIndex, 
-    isReviewMode, 
-    reviewIndex, 
-    correctCount, 
-    reviewCount,
-    unseenCount,
-    voiceMode,
-    transcript: transcript?.slice(0, 50)
-  })
+
+
+  const getHint = async () => {
+    if (hint || isLoadingHint) return
+    
+    setIsLoadingHint(true)
+    try {
+      const res = await fetch('/api/hint', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question: currentCard.question,
+          answer: currentCard.answer,
+        }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to get hint')
+      }
+
+      setHint(data.hint)
+    } catch {
+      // Silently fail - hint is optional
+    } finally {
+      setIsLoadingHint(false)
+    }
+  }
 
   const evaluateAnswer = async () => {
     if (!transcript.trim()) {
@@ -131,11 +151,12 @@ export function StudySession({ flashcards, onReset }: StudySessionProps) {
     const newStatuses = [...cardStatuses]
     newStatuses[actualIndex] = status
     setCardStatuses(newStatuses)
-    console.log('[v0] Card marked:', { index: actualIndex, status })
 
-    // Reset voice state
+
+    // Reset voice state and hint
     resetTranscript()
     setEvaluation(null)
+    setHint(null)
     setIsFlipped(false)
     
     if (isReviewMode) {
@@ -165,7 +186,6 @@ export function StudySession({ flashcards, onReset }: StudySessionProps) {
           setReviewCards(toReview)
           setReviewIndex(0)
           setIsReviewMode(true)
-          console.log('[v0] Entering review mode with cards:', toReview)
         }
       }
     }
@@ -175,6 +195,7 @@ export function StudySession({ flashcards, onReset }: StudySessionProps) {
     setIsFlipped(false)
     resetTranscript()
     setEvaluation(null)
+    setHint(null)
     if (isReviewMode) {
       if (reviewIndex > 0) setReviewIndex(reviewIndex - 1)
     } else {
@@ -186,6 +207,7 @@ export function StudySession({ flashcards, onReset }: StudySessionProps) {
     setIsFlipped(false)
     resetTranscript()
     setEvaluation(null)
+    setHint(null)
     if (isReviewMode) {
       if (reviewIndex < reviewCards.length - 1) setReviewIndex(reviewIndex + 1)
     } else {
@@ -255,23 +277,23 @@ export function StudySession({ flashcards, onReset }: StudySessionProps) {
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          {isSupported && (
-            <Button
-              variant={voiceMode ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setVoiceMode(!voiceMode)}
-            >
-              <Volume2 className="h-4 w-4 mr-2" />
-              {voiceMode ? 'Voice On' : 'Voice Off'}
-            </Button>
-          )}
+          <Button
+            variant={voiceMode ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setVoiceMode(!voiceMode)}
+            disabled={!isSupported}
+            title={!isSupported ? 'Voice mode not supported in this browser' : voiceMode ? 'Disable voice mode' : 'Enable voice mode'}
+          >
+            <Volume2 className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">{voiceMode ? 'Voice On' : 'Voice Off'}</span>
+          </Button>
           <Button variant="outline" size="sm" onClick={onReset}>
-            <RotateCcw className="h-4 w-4 mr-2" />
-            New Set
+            <RotateCcw className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">New Set</span>
           </Button>
           <Button size="sm" onClick={exportToMarkdown}>
-            <Download className="h-4 w-4 mr-2" />
-            Export MD
+            <Download className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Export MD</span>
           </Button>
         </div>
       </div>
@@ -338,6 +360,40 @@ export function StudySession({ flashcards, onReset }: StudySessionProps) {
           </div>
         </div>
       </div>
+
+      {/* Hint section - only show when card is not flipped */}
+      {!isFlipped && (
+        <div className="flex flex-col items-center gap-3 max-w-xl mx-auto">
+          {!hint ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={getHint}
+              disabled={isLoadingHint}
+              className="border-amber-500/50 text-amber-700 hover:bg-amber-500/10 dark:text-amber-400"
+            >
+              {isLoadingHint ? (
+                <>
+                  <Spinner className="h-4 w-4 mr-2" />
+                  Getting hint...
+                </>
+              ) : (
+                <>
+                  <Lightbulb className="h-4 w-4 mr-2" />
+                  Get a Hint
+                </>
+              )}
+            </Button>
+          ) : (
+            <div className="w-full rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
+              <div className="flex items-start gap-2">
+                <Lightbulb className="h-4 w-4 mt-0.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                <p className="text-sm text-amber-800 dark:text-amber-200">{hint}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Voice input section */}
       {voiceMode && !isFlipped && (
