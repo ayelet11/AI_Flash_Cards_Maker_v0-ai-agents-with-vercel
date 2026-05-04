@@ -1,5 +1,50 @@
 import * as cheerio from 'cheerio'
 
+// Transform Google Workspace URLs to their export endpoints
+function transformGoogleUrl(url: string): { url: string; isGoogleExport: boolean } {
+  try {
+    const parsed = new URL(url)
+    const hostname = parsed.hostname.toLowerCase()
+    
+    // Google Docs: docs.google.com/document/d/{ID}/...
+    if (hostname === 'docs.google.com' && parsed.pathname.includes('/document/d/')) {
+      const match = parsed.pathname.match(/\/document\/d\/([a-zA-Z0-9_-]+)/)
+      if (match) {
+        return {
+          url: `https://docs.google.com/document/d/${match[1]}/export?format=txt`,
+          isGoogleExport: true
+        }
+      }
+    }
+    
+    // Google Slides: docs.google.com/presentation/d/{ID}/...
+    if (hostname === 'docs.google.com' && parsed.pathname.includes('/presentation/d/')) {
+      const match = parsed.pathname.match(/\/presentation\/d\/([a-zA-Z0-9_-]+)/)
+      if (match) {
+        return {
+          url: `https://docs.google.com/presentation/d/${match[1]}/export?format=txt`,
+          isGoogleExport: true
+        }
+      }
+    }
+    
+    // Google Sheets: docs.google.com/spreadsheets/d/{ID}/...
+    if (hostname === 'docs.google.com' && parsed.pathname.includes('/spreadsheets/d/')) {
+      const match = parsed.pathname.match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/)
+      if (match) {
+        return {
+          url: `https://docs.google.com/spreadsheets/d/${match[1]}/export?format=csv`,
+          isGoogleExport: true
+        }
+      }
+    }
+    
+    return { url, isGoogleExport: false }
+  } catch {
+    return { url, isGoogleExport: false }
+  }
+}
+
 // Block private/internal IP ranges to prevent SSRF
 function isPrivateUrl(url: string): boolean {
   try {
@@ -63,17 +108,22 @@ export async function POST(req: Request) {
       return Response.json({ error: 'Access to private/internal URLs is not allowed.' }, { status: 403 })
     }
     
+    // Transform Google Workspace URLs to export endpoints
+    const { url: fetchUrl, isGoogleExport } = transformGoogleUrl(url)
+    console.log('[v0] Fetch URL:', fetchUrl, 'isGoogleExport:', isGoogleExport)
+    
     // Fetch the URL with timeout and size limit
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
     
     let response: Response
     try {
-      response = await fetch(url, {
+      response = await fetch(fetchUrl, {
         signal: controller.signal,
         headers: {
           'User-Agent': 'StudyCardsBot/1.0 (Educational content extractor)',
         },
+        redirect: 'follow',
       })
     } catch (fetchError) {
       clearTimeout(timeoutId)
@@ -88,9 +138,12 @@ export async function POST(req: Request) {
       return Response.json({ error: `Failed to fetch URL: HTTP ${response.status}` }, { status: 502 })
     }
     
-    // Check content type
+    // Check content type - allow more types for Google exports
     const contentType = response.headers.get('content-type') || ''
-    if (!contentType.includes('text/html') && !contentType.includes('text/plain')) {
+    const allowedTypes = ['text/html', 'text/plain', 'text/csv', 'application/csv']
+    const isAllowedType = allowedTypes.some(type => contentType.includes(type))
+    
+    if (!isAllowedType && !isGoogleExport) {
       return Response.json({ error: 'URL must point to an HTML or text page.' }, { status: 400 })
     }
     
@@ -122,17 +175,24 @@ export async function POST(req: Request) {
       chunks.push(value)
     }
     
-    const html = new TextDecoder().decode(Buffer.concat(chunks.map(c => Buffer.from(c))))
-    console.log('[v0] HTML fetched, length:', html.length)
+    const rawContent = new TextDecoder().decode(Buffer.concat(chunks.map(c => Buffer.from(c))))
+    console.log('[v0] Content fetched, length:', rawContent.length)
     
-    // Parse HTML and extract text
-    const $ = cheerio.load(html)
+    let mainContent: string
     
-    // Remove script, style, nav, footer, header elements
-    $('script, style, nav, footer, header, aside, iframe, noscript').remove()
-    
-    // Get main content - try article, main, or body
-    let mainContent = $('article').text() || $('main').text() || $('body').text()
+    // For Google exports (plain text/CSV), use content directly
+    if (isGoogleExport) {
+      mainContent = rawContent
+    } else {
+      // Parse HTML and extract text
+      const $ = cheerio.load(rawContent)
+      
+      // Remove script, style, nav, footer, header elements
+      $('script, style, nav, footer, header, aside, iframe, noscript').remove()
+      
+      // Get main content - try article, main, or body
+      mainContent = $('article').text() || $('main').text() || $('body').text()
+    }
     
     // Clean up whitespace
     mainContent = mainContent
