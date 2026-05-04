@@ -62,8 +62,6 @@ export function StudySession({ flashcards, onReset }: StudySessionProps) {
 
   const { isListening, transcript, error: voiceError, isSupported, startListening, stopListening, resetTranscript } = useVoiceInput()
 
-  console.log('[v0] Voice support check:', { isSupported, voiceMode })
-
   // Get current card based on mode
   const currentCards = isReviewMode ? reviewCards : flashcards.map((_, i) => i)
   const actualIndex = isReviewMode ? reviewCards[reviewIndex] : currentIndex
@@ -111,7 +109,6 @@ export function StudySession({ flashcards, onReset }: StudySessionProps) {
     }
 
     setIsEvaluating(true)
-    console.log('[v0] Evaluating spoken answer:', transcript.slice(0, 100))
 
     try {
       const res = await fetch('/api/evaluate', {
@@ -125,15 +122,14 @@ export function StudySession({ flashcards, onReset }: StudySessionProps) {
       })
 
       const data = await res.json()
-      console.log('[v0] Evaluation response:', data)
 
       if (!res.ok) {
         throw new Error(data.error || 'Failed to evaluate')
       }
 
       setEvaluation(data)
-    } catch (err) {
-      console.error('[v0] Evaluation error:', err)
+    } catch {
+      // Silently fail - evaluation is optional
     } finally {
       setIsEvaluating(false)
     }
@@ -330,10 +326,10 @@ export function StudySession({ flashcards, onReset }: StudySessionProps) {
         >
           {/* Front - Question */}
           <div className={cn(
-            'absolute inset-0 rounded-xl p-1 bg-gradient-to-br',
+            'absolute inset-0 rounded-xl p-1 bg-gradient-to-br backface-hidden',
             gradientBorders[actualIndex % gradientBorders.length]
           )}>
-            <div className="backface-hidden h-full rounded-lg bg-card p-5 flex flex-col">
+            <div className="h-full rounded-lg bg-card p-5 flex flex-col">
               <span className="text-xs font-medium text-muted-foreground mb-2">
                 Card {actualIndex + 1} - Question
               </span>
@@ -350,10 +346,10 @@ export function StudySession({ flashcards, onReset }: StudySessionProps) {
 
           {/* Back - Answer */}
           <div className={cn(
-            'absolute inset-0 rotate-y-180 rounded-xl p-1 bg-gradient-to-br',
+            'absolute inset-0 rotate-y-180 rounded-xl p-1 bg-gradient-to-br backface-hidden',
             gradientBorders[actualIndex % gradientBorders.length]
           )}>
-            <div className="backface-hidden h-full rounded-lg bg-card p-5 flex flex-col">
+            <div className="h-full rounded-lg bg-card p-5 flex flex-col">
               <span className="text-xs font-medium text-primary mb-2">
                 Card {actualIndex + 1} - Answer
               </span>

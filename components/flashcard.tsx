@@ -42,10 +42,10 @@ export function Flashcard({ question, answer, index }: FlashcardProps) {
       >
         {/* Front - Question */}
         <div className={cn(
-          'absolute inset-0 rounded-xl p-1 bg-gradient-to-br',
+          'absolute inset-0 rounded-xl p-1 bg-gradient-to-br backface-hidden',
           gradientClass
         )}>
-          <div className="backface-hidden h-full rounded-lg bg-card p-5 flex flex-col">
+          <div className="h-full rounded-lg bg-card p-5 flex flex-col">
             <span className="text-xs font-medium text-muted-foreground mb-2">
               Card {index + 1} - Question
             </span>
@@ -62,10 +62,10 @@ export function Flashcard({ question, answer, index }: FlashcardProps) {
 
         {/* Back - Answer */}
         <div className={cn(
-          'absolute inset-0 rotate-y-180 rounded-xl p-1 bg-gradient-to-br',
+          'absolute inset-0 rotate-y-180 rounded-xl p-1 bg-gradient-to-br backface-hidden',
           gradientClass
         )}>
-          <div className="backface-hidden h-full rounded-lg bg-card p-5 flex flex-col">
+          <div className="h-full rounded-lg bg-card p-5 flex flex-col">
             <span className="text-xs font-medium text-primary mb-2">
               Card {index + 1} - Answer
             </span>
