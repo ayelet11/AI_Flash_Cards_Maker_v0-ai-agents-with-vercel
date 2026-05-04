@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { GeneratorForm } from '@/components/generator-form'
 import { StudySession } from '@/components/study-session'
+import { DemoModal } from '@/components/demo-modal'
 import { BookOpen } from 'lucide-react'
 
 interface FlashcardData {
@@ -39,6 +40,9 @@ export default function Home() {
           <p className="mt-3 text-pretty text-muted-foreground">
             Paste your notes, articles, or URLs and let AI generate interactive flashcards for effective studying.
           </p>
+          <div className="mt-4">
+            <DemoModal />
+          </div>
         </header>
 
         {/* Main Content */}
