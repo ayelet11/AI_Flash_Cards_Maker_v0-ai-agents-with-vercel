@@ -18,7 +18,6 @@ export default function Home() {
   const handleGenerate = (cards: FlashcardData[], demo: boolean) => {
     setFlashcards(cards)
     setIsDemo(demo)
-    console.log('[v0] Flashcards generated:', { count: cards.length, demo })
   }
 
   const handleReset = () => {
@@ -52,8 +51,8 @@ export default function Home() {
           ) : (
             <>
               {isDemo && (
-                <div className="mb-6 rounded-lg border border-amber-500/50 bg-amber-500/10 p-4 text-center text-sm text-amber-700 dark:text-amber-400">
-                  Demo Mode: Add your GOOGLE_GENERATIVE_AI_API_KEY in project settings to generate real flashcards.
+                <div className="mb-6 rounded-lg border border-amber-500/50 bg-amber-500/10 p-3 sm:p-4 text-center text-xs sm:text-sm text-amber-700 dark:text-amber-400 break-words">
+                  <span className="font-medium">Demo Mode:</span> Add your <code className="bg-amber-500/20 px-1 rounded text-[10px] sm:text-xs break-all">GOOGLE_GENERATIVE_AI_API_KEY</code> in project settings to generate real flashcards.
                 </div>
               )}
               <StudySession flashcards={flashcards} onReset={handleReset} />
