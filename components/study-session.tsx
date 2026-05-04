@@ -56,6 +56,8 @@ export function StudySession({ flashcards, onReset }: StudySessionProps) {
 
   const { isListening, transcript, error: voiceError, isSupported, startListening, stopListening, resetTranscript } = useVoiceInput()
 
+  console.log('[v0] Voice support check:', { isSupported, voiceMode })
+
   // Get current card based on mode
   const currentCards = isReviewMode ? reviewCards : flashcards.map((_, i) => i)
   const actualIndex = isReviewMode ? reviewCards[reviewIndex] : currentIndex
@@ -283,17 +285,18 @@ export function StudySession({ flashcards, onReset }: StudySessionProps) {
             onClick={() => setVoiceMode(!voiceMode)}
             disabled={!isSupported}
             title={!isSupported ? 'Voice mode not supported in this browser' : voiceMode ? 'Disable voice mode' : 'Enable voice mode'}
+            className={!isSupported ? 'opacity-50' : ''}
           >
-            <Volume2 className="h-4 w-4 sm:mr-2" />
-            <span className="hidden sm:inline">{voiceMode ? 'Voice On' : 'Voice Off'}</span>
+            <Volume2 className="h-4 w-4 mr-1 sm:mr-2" />
+            <span className="text-xs sm:text-sm">{voiceMode ? 'Voice' : 'Voice'}</span>
           </Button>
           <Button variant="outline" size="sm" onClick={onReset}>
-            <RotateCcw className="h-4 w-4 sm:mr-2" />
-            <span className="hidden sm:inline">New Set</span>
+            <RotateCcw className="h-4 w-4 mr-1 sm:mr-2" />
+            <span className="text-xs sm:text-sm">New</span>
           </Button>
           <Button size="sm" onClick={exportToMarkdown}>
-            <Download className="h-4 w-4 sm:mr-2" />
-            <span className="hidden sm:inline">Export MD</span>
+            <Download className="h-4 w-4 mr-1 sm:mr-2" />
+            <span className="text-xs sm:text-sm">Export</span>
           </Button>
         </div>
       </div>
