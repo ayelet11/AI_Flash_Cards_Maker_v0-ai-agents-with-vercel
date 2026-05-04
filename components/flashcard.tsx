@@ -9,7 +9,7 @@ interface FlashcardProps {
   index: number
 }
 
-// Gradient border colors that cycle: teal, orange, green, blue, yellow, purple
+// Gradient border colors that cycle through a variety of hues
 const gradientBorders = [
   'from-teal-500 via-teal-400 to-teal-300',
   'from-orange-500 via-orange-400 to-orange-300',
@@ -17,6 +17,12 @@ const gradientBorders = [
   'from-blue-500 via-blue-400 to-blue-300',
   'from-yellow-500 via-yellow-400 to-yellow-300',
   'from-purple-500 via-purple-400 to-purple-300',
+  'from-rose-500 via-rose-400 to-rose-300',
+  'from-amber-500 via-amber-400 to-amber-300',
+  'from-indigo-500 via-indigo-400 to-indigo-300',
+  'from-cyan-500 via-cyan-400 to-cyan-300',
+  'from-emerald-500 via-emerald-400 to-emerald-300',
+  'from-fuchsia-500 via-fuchsia-400 to-fuchsia-300',
 ]
 
 export function Flashcard({ question, answer, index }: FlashcardProps) {
