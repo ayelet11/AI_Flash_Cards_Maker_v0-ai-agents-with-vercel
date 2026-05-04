@@ -18,6 +18,8 @@ export function useVoiceInput(): UseVoiceInputReturn {
   const [error, setError] = useState<string | null>(null)
   const [isSupported, setIsSupported] = useState(false)
   const recognitionRef = useRef<SpeechRecognition | null>(null)
+  // Track finalized text separately to avoid duplication
+  const finalizedTextRef = useRef('')
 
   useEffect(() => {
     // Check for browser support
@@ -33,7 +35,8 @@ export function useVoiceInput(): UseVoiceInputReturn {
         let finalTranscript = ''
         let interimTranscript = ''
 
-        for (let i = event.resultIndex; i < event.results.length; i++) {
+        // Process all results from the beginning to build complete transcript
+        for (let i = 0; i < event.results.length; i++) {
           const result = event.results[i]
           if (result.isFinal) {
             finalTranscript += result[0].transcript
@@ -42,13 +45,13 @@ export function useVoiceInput(): UseVoiceInputReturn {
           }
         }
 
-        setTranscript(prev => {
-          // Append final transcript, show interim
-          if (finalTranscript) {
-            return prev + finalTranscript
-          }
-          return prev + interimTranscript
-        })
+        // Update finalized text ref when we have final results
+        if (finalTranscript) {
+          finalizedTextRef.current = finalTranscript
+        }
+
+        // Display: finalized text + current interim text
+        setTranscript(finalizedTextRef.current + interimTranscript)
       }
 
       recognitionRef.current.onerror = (event) => {
@@ -77,6 +80,7 @@ export function useVoiceInput(): UseVoiceInputReturn {
     
     setError(null)
     setTranscript('')
+    finalizedTextRef.current = ''
     
     try {
       recognitionRef.current.start()
@@ -98,6 +102,7 @@ export function useVoiceInput(): UseVoiceInputReturn {
 
   const resetTranscript = useCallback(() => {
     setTranscript('')
+    finalizedTextRef.current = ''
     setError(null)
   }, [])
 

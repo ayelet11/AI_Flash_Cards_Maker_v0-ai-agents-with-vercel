@@ -7,6 +7,17 @@ import { Spinner } from '@/components/ui/spinner'
 import { Download, RotateCcw, Check, RefreshCw, ChevronLeft, ChevronRight, Mic, MicOff, Volume2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useVoiceInput } from '@/hooks/use-voice-input'
+import { Celebration } from '@/components/celebration'
+
+// Gradient border colors that cycle: red, orange, green, blue, yellow, purple
+const gradientBorders = [
+  'from-red-500 via-red-400 to-red-300',
+  'from-orange-500 via-orange-400 to-orange-300',
+  'from-green-500 via-green-400 to-green-300',
+  'from-blue-500 via-blue-400 to-blue-300',
+  'from-yellow-500 via-yellow-400 to-yellow-300',
+  'from-purple-500 via-purple-400 to-purple-300',
+]
 
 interface FlashcardData {
   question: string
@@ -206,6 +217,7 @@ export function StudySession({ flashcards, onReset }: StudySessionProps) {
   if (allComplete) {
     return (
       <div className="space-y-6 text-center">
+        <Celebration isActive={allComplete} />
         <div className="rounded-xl border border-green-500/30 bg-green-500/10 p-8">
           <h2 className="text-2xl font-bold text-foreground mb-2">Session Complete!</h2>
           <p className="text-muted-foreground mb-4">
@@ -276,7 +288,7 @@ export function StudySession({ flashcards, onReset }: StudySessionProps) {
 
       {/* Flashcard */}
       <div
-        className="perspective-1000 h-72 cursor-pointer"
+        className="perspective-1000 h-72 cursor-pointer max-w-xl mx-auto"
         onClick={() => !voiceMode && setIsFlipped(!isFlipped)}
       >
         <div
@@ -286,33 +298,43 @@ export function StudySession({ flashcards, onReset }: StudySessionProps) {
           )}
         >
           {/* Front - Question */}
-          <div className="absolute inset-0 backface-hidden rounded-xl border border-border bg-card p-6 shadow-sm flex flex-col">
-            <span className="text-xs font-medium text-muted-foreground mb-2">
-              Card {actualIndex + 1} - Question
-            </span>
-            <div className="flex-1 overflow-y-auto flex items-center justify-center">
-              <p className="text-center text-lg text-foreground font-medium">
-                {currentCard.question}
-              </p>
+          <div className={cn(
+            'absolute inset-0 rounded-xl p-1 bg-gradient-to-br',
+            gradientBorders[actualIndex % gradientBorders.length]
+          )}>
+            <div className="backface-hidden h-full rounded-lg bg-card p-5 flex flex-col">
+              <span className="text-xs font-medium text-muted-foreground mb-2">
+                Card {actualIndex + 1} - Question
+              </span>
+              <div className="flex-1 overflow-y-auto flex items-center justify-center">
+                <p className="text-center text-lg text-foreground font-medium">
+                  {currentCard.question}
+                </p>
+              </div>
+              <span className="text-xs text-muted-foreground text-center mt-2">
+                {voiceMode ? 'Speak your answer, then check' : 'Click to reveal answer'}
+              </span>
             </div>
-            <span className="text-xs text-muted-foreground text-center mt-2">
-              {voiceMode ? 'Speak your answer, then check' : 'Click to reveal answer'}
-            </span>
           </div>
 
           {/* Back - Answer */}
-          <div className="absolute inset-0 backface-hidden rotate-y-180 rounded-xl border border-primary/20 bg-primary/5 p-6 shadow-sm flex flex-col">
-            <span className="text-xs font-medium text-primary mb-2">
-              Card {actualIndex + 1} - Answer
-            </span>
-            <div className="flex-1 overflow-y-auto flex items-center justify-center">
-              <p className="text-center text-foreground">
-                {currentCard.answer}
-              </p>
+          <div className={cn(
+            'absolute inset-0 rotate-y-180 rounded-xl p-1 bg-gradient-to-br',
+            gradientBorders[actualIndex % gradientBorders.length]
+          )}>
+            <div className="backface-hidden h-full rounded-lg bg-card p-5 flex flex-col">
+              <span className="text-xs font-medium text-primary mb-2">
+                Card {actualIndex + 1} - Answer
+              </span>
+              <div className="flex-1 overflow-y-auto flex items-center justify-center">
+                <p className="text-center text-foreground">
+                  {currentCard.answer}
+                </p>
+              </div>
+              <span className="text-xs text-muted-foreground text-center mt-2">
+                Click to see question
+              </span>
             </div>
-            <span className="text-xs text-muted-foreground text-center mt-2">
-              Click to see question
-            </span>
           </div>
         </div>
       </div>

@@ -52,14 +52,15 @@ export function FlashcardList({ flashcards, onReset }: FlashcardListProps) {
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto">
         {flashcards.map((card, index) => (
-          <Flashcard
-            key={index}
-            question={card.question}
-            answer={card.answer}
-            index={index}
-          />
+          <div key={index} className="max-w-xs mx-auto w-full">
+            <Flashcard
+              question={card.question}
+              answer={card.answer}
+              index={index}
+            />
+          </div>
         ))}
       </div>
 
