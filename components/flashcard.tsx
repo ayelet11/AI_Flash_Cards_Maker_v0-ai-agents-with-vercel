@@ -9,9 +9,9 @@ interface FlashcardProps {
   index: number
 }
 
-// Gradient border colors that cycle: red, orange, green, blue, yellow, purple
+// Gradient border colors that cycle: teal, orange, green, blue, yellow, purple
 const gradientBorders = [
-  'from-red-500 via-red-400 to-red-300',
+  'from-teal-500 via-teal-400 to-teal-300',
   'from-orange-500 via-orange-400 to-orange-300',
   'from-green-500 via-green-400 to-green-300',
   'from-blue-500 via-blue-400 to-blue-300',
