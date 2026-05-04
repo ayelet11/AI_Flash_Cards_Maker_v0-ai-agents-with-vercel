@@ -51,19 +51,17 @@ export function DemoModal() {
         </DialogHeader>
         
         <div className="mt-4 space-y-6">
-          {/* Video placeholder - in production this would be an actual video */}
-          <div className="relative aspect-video rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 border border-border overflow-hidden">
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center space-y-3 p-6">
-                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-                  <Play className="h-8 w-8 text-primary" />
-                </div>
-                <p className="text-lg font-medium text-foreground">{t('demo.videoPlaceholder')}</p>
-                <p className="text-sm text-muted-foreground max-w-md">
-                  {t('demo.videoSubtext')}
-                </p>
-              </div>
-            </div>
+          {/* Demo video */}
+          <div className="relative aspect-video rounded-lg border border-border overflow-hidden bg-black">
+            <video
+              className="w-full h-full object-contain"
+              controls
+              preload="metadata"
+              playsInline
+            >
+              <source src="/app_demo.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
           </div>
 
           {/* Step by step guide */}
