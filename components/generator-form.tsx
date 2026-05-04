@@ -9,12 +9,14 @@ import { Spinner } from '@/components/ui/spinner'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Label } from '@/components/ui/label'
 import { AlertCircle, Sparkles, Link, FileText } from 'lucide-react'
+import { useLanguage } from '@/contexts/language-context'
 
 interface GeneratorFormProps {
   onGenerate: (flashcards: { question: string; answer: string }[], isDemo: boolean) => void
 }
 
 export function GeneratorForm({ onGenerate }: GeneratorFormProps) {
+  const { t } = useLanguage()
   const [inputMode, setInputMode] = useState<'text' | 'link'>('text')
   const [content, setContent] = useState('')
   const [url, setUrl] = useState('')
@@ -33,7 +35,6 @@ export function GeneratorForm({ onGenerate }: GeneratorFormProps) {
 
     setError(null)
     setIsExtracting(true)
-    console.log('[v0] Extracting from URL:', url)
 
     try {
       const res = await fetch('/api/extract', {
@@ -43,7 +44,6 @@ export function GeneratorForm({ onGenerate }: GeneratorFormProps) {
       })
 
       const data = await res.json()
-      console.log('[v0] Extract response:', { ok: res.ok, extractedLength: data.extractedLength, error: data.error })
 
       if (!res.ok) {
         throw new Error(data.error || 'Failed to extract content')
@@ -53,7 +53,6 @@ export function GeneratorForm({ onGenerate }: GeneratorFormProps) {
       setExtractedFrom(data.sourceUrl)
       setInputMode('text') // Switch to text mode to show extracted content
     } catch (err) {
-      console.error('[v0] Extract error:', err)
       setError(err instanceof Error ? err.message : 'Failed to extract content from URL')
     } finally {
       setIsExtracting(false)
@@ -73,7 +72,6 @@ export function GeneratorForm({ onGenerate }: GeneratorFormProps) {
       })
 
       const data = await res.json()
-      console.log('[v0] Generate response:', { ok: res.ok, flashcardsCount: data.flashcards?.length, error: data.error })
 
       if (!res.ok) {
         throw new Error(data.error || 'Failed to generate flashcards')
@@ -82,7 +80,6 @@ export function GeneratorForm({ onGenerate }: GeneratorFormProps) {
       setRemaining(data.remaining)
       onGenerate(data.flashcards, data.demo === true)
     } catch (err) {
-      console.error('[v0] Generate error:', err)
       setError(err instanceof Error ? err.message : 'Something went wrong')
     } finally {
       setIsLoading(false)
@@ -96,7 +93,7 @@ export function GeneratorForm({ onGenerate }: GeneratorFormProps) {
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Input Mode Toggle */}
       <div className="space-y-3">
-        <Label className="text-sm font-medium text-foreground">Input source</Label>
+        <Label className="text-sm font-medium text-foreground">{t('form.inputSource')}</Label>
         <RadioGroup
           value={inputMode}
           onValueChange={(value) => setInputMode(value as 'text' | 'link')}
@@ -106,14 +103,14 @@ export function GeneratorForm({ onGenerate }: GeneratorFormProps) {
             <RadioGroupItem value="text" id="text-mode" />
             <Label htmlFor="text-mode" className="flex items-center gap-2 cursor-pointer">
               <FileText className="h-4 w-4" />
-              Paste Text
+              {t('form.pasteText')}
             </Label>
           </div>
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="link" id="link-mode" />
             <Label htmlFor="link-mode" className="flex items-center gap-2 cursor-pointer">
               <Link className="h-4 w-4" />
-              From URL
+              {t('form.fromUrl')}
             </Label>
           </div>
         </RadioGroup>
@@ -123,13 +120,13 @@ export function GeneratorForm({ onGenerate }: GeneratorFormProps) {
       {inputMode === 'link' && (
         <div className="space-y-2">
           <Label htmlFor="url" className="text-sm font-medium text-foreground">
-            Article or webpage URL
+            {t('form.urlLabel')}
           </Label>
           <div className="flex gap-2">
             <Input
               id="url"
               type="url"
-              placeholder="https://en.wikipedia.org/wiki/..."
+              placeholder={t('form.urlPlaceholder')}
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               className="flex-1"
@@ -143,15 +140,15 @@ export function GeneratorForm({ onGenerate }: GeneratorFormProps) {
               {isExtracting ? (
                 <>
                   <Spinner className="mr-2 h-4 w-4" />
-                  Extracting...
+                  {t('form.extracting')}
                 </>
               ) : (
-                'Extract'
+                t('form.extract')
               )}
             </Button>
           </div>
           <p className="text-xs text-muted-foreground">
-            Enter a URL and click Extract to fetch the text content
+            {t('form.urlHint')}
           </p>
         </div>
       )}
@@ -162,16 +159,16 @@ export function GeneratorForm({ onGenerate }: GeneratorFormProps) {
           htmlFor="content"
           className="text-sm font-medium text-foreground"
         >
-          {inputMode === 'link' ? 'Extracted content (editable)' : 'Paste your notes, article, or study material'}
+          {inputMode === 'link' ? t('form.contentLabelExtracted') : t('form.contentLabel')}
         </label>
         {extractedFrom && (
           <p className="text-xs text-muted-foreground">
-            Extracted from: <a href={extractedFrom} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{extractedFrom}</a>
+            {t('form.extractedFrom')} <a href={extractedFrom} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{extractedFrom}</a>
           </p>
         )}
         <Textarea
           id="content"
-          placeholder="Paste your study material here... This could be lecture notes, a Wikipedia article, textbook content, or any text you want to learn from."
+          placeholder={t('form.contentPlaceholder')}
           value={content}
           onChange={(e) => setContent(e.target.value)}
           className="min-h-[200px] resize-y"
@@ -179,10 +176,10 @@ export function GeneratorForm({ onGenerate }: GeneratorFormProps) {
         />
         <div className="flex justify-between text-xs text-muted-foreground">
           <span>
-            {charCount.toLocaleString()} / {maxChars.toLocaleString()} characters
+            {charCount.toLocaleString()} / {maxChars.toLocaleString()} {t('form.characters')}
           </span>
           {remaining !== null && (
-            <span>{remaining} requests remaining this minute</span>
+            <span>{remaining} {t('form.requestsRemaining')}</span>
           )}
         </div>
       </div>
@@ -191,7 +188,7 @@ export function GeneratorForm({ onGenerate }: GeneratorFormProps) {
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <label className="text-sm font-medium text-foreground">
-            Number of flashcards
+            {t('form.cardCount')}
           </label>
           <span className="text-sm font-medium text-primary">{cardCount}</span>
         </div>
@@ -204,8 +201,8 @@ export function GeneratorForm({ onGenerate }: GeneratorFormProps) {
           className="w-full"
         />
         <div className="flex justify-between text-xs text-muted-foreground">
-          <span>3 cards</span>
-          <span>30 cards</span>
+          <span>3 {t('form.cards')}</span>
+          <span>30 {t('form.cards')}</span>
         </div>
       </div>
 
@@ -225,19 +222,19 @@ export function GeneratorForm({ onGenerate }: GeneratorFormProps) {
         {isLoading ? (
           <>
             <Spinner className="mr-2 h-4 w-4" />
-            Generating...
+            {t('form.generating')}
           </>
         ) : (
           <>
             <Sparkles className="mr-2 h-4 w-4" />
-            Generate Flashcards
+            {t('form.generate')}
           </>
         )}
       </Button>
 
       {content.trim().length > 0 && content.trim().length < 50 && (
         <p className="text-center text-xs text-muted-foreground">
-          Please enter at least 50 characters of content
+          {t('form.minChars')}
         </p>
       )}
     </form>
