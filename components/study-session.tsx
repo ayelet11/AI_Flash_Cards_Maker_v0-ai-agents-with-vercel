@@ -325,10 +325,13 @@ export function StudySession({ flashcards, onReset }: StudySessionProps) {
           )}
         >
           {/* Front - Question */}
-          <div className={cn(
-            'absolute inset-0 rounded-xl p-1 bg-gradient-to-br backface-hidden',
-            gradientBorders[actualIndex % gradientBorders.length]
-          )}>
+          <div 
+            className={cn(
+              'absolute inset-0 rounded-xl p-1 bg-gradient-to-br',
+              gradientBorders[actualIndex % gradientBorders.length]
+            )}
+            style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
+          >
             <div className="h-full rounded-lg bg-card p-5 flex flex-col">
               <span className="text-xs font-medium text-muted-foreground mb-2">
                 Card {actualIndex + 1} - Question
@@ -345,10 +348,17 @@ export function StudySession({ flashcards, onReset }: StudySessionProps) {
           </div>
 
           {/* Back - Answer */}
-          <div className={cn(
-            'absolute inset-0 rotate-y-180 rounded-xl p-1 bg-gradient-to-br backface-hidden',
-            gradientBorders[actualIndex % gradientBorders.length]
-          )}>
+          <div 
+            className={cn(
+              'absolute inset-0 rounded-xl p-1 bg-gradient-to-br',
+              gradientBorders[actualIndex % gradientBorders.length]
+            )}
+            style={{ 
+              backfaceVisibility: 'hidden', 
+              WebkitBackfaceVisibility: 'hidden',
+              transform: 'rotateY(180deg)'
+            }}
+          >
             <div className="h-full rounded-lg bg-card p-5 flex flex-col">
               <span className="text-xs font-medium text-primary mb-2">
                 Card {actualIndex + 1} - Answer
@@ -490,23 +500,13 @@ export function StudySession({ flashcards, onReset }: StudySessionProps) {
       )}
 
       {/* Navigation and marking buttons */}
-      <div className="flex items-center justify-between">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={goToPrevious}
-          disabled={currentPosition === 0}
-        >
-          <ChevronLeft className="h-4 w-4 mr-1" />
-          Previous
-        </Button>
-
-        <div className="flex gap-2">
+      <div className="flex flex-col gap-4">
+        {/* Main action buttons - always visible */}
+        <div className="flex justify-center gap-2">
           <Button
             variant="outline"
             className="border-amber-500/50 text-amber-700 hover:bg-amber-500/10 dark:text-amber-400"
             onClick={() => markCard('review')}
-            disabled={!isFlipped && !evaluation}
           >
             <RefreshCw className="h-4 w-4 mr-2" />
             Ask Again
@@ -514,29 +514,53 @@ export function StudySession({ flashcards, onReset }: StudySessionProps) {
           <Button
             className="bg-green-600 hover:bg-green-700 text-white"
             onClick={() => markCard('correct')}
-            disabled={!isFlipped && !evaluation}
           >
             <Check className="h-4 w-4 mr-2" />
             Correct
           </Button>
         </div>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={goToNext}
-          disabled={currentPosition === totalInCurrentMode - 1}
-        >
-          Next
-          <ChevronRight className="h-4 w-4 ml-1" />
-        </Button>
+        {/* Navigation row */}
+        <div className="flex items-center justify-between">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={goToPrevious}
+            disabled={currentPosition === 0}
+          >
+            <ChevronLeft className="h-4 w-4 mr-1" />
+            Previous
+          </Button>
+
+          <span className="text-xs text-muted-foreground">
+            {cardStatuses[actualIndex] === 'unseen' ? 'Not marked yet' : 
+             cardStatuses[actualIndex] === 'correct' ? 'Marked correct' : 'Marked for review'}
+          </span>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={goToNext}
+            disabled={currentPosition === totalInCurrentMode - 1}
+          >
+            Next
+            <ChevronRight className="h-4 w-4 ml-1" />
+          </Button>
+        </div>
       </div>
 
       <p className="text-center text-sm text-muted-foreground">
         {voiceMode 
-          ? 'Speak your answer, get AI feedback, then mark as Correct or Ask Again'
-          : 'Flip the card, then mark as Correct or Ask Again'}
+          ? 'Speak your answer, then mark as Correct or Ask Again to advance'
+          : 'Click card to flip, then mark as Correct or Ask Again to advance'}
       </p>
+      
+      {/* Hint about completion */}
+      {unseenCount > 0 && unseenCount < flashcards.length && (
+        <p className="text-center text-xs text-amber-600 dark:text-amber-400">
+          Mark all cards to complete the session. {unseenCount} card{unseenCount !== 1 ? 's' : ''} remaining.
+        </p>
+      )}
     </div>
   )
 }
