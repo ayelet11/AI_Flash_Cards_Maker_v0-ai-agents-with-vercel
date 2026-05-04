@@ -8,6 +8,7 @@ import { Download, RotateCcw, Check, RefreshCw, ChevronLeft, ChevronRight, Mic, 
 import { cn } from '@/lib/utils'
 import { useVoiceInput } from '@/hooks/use-voice-input'
 import { Celebration } from '@/components/celebration'
+import { useLanguage } from '@/contexts/language-context'
 
 // Gradient border colors that cycle through a variety of hues
 const gradientBorders = [
@@ -46,6 +47,7 @@ interface Evaluation {
 }
 
 export function StudySession({ flashcards, onReset }: StudySessionProps) {
+  const { t } = useLanguage()
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isFlipped, setIsFlipped] = useState(false)
   const [cardStatuses, setCardStatuses] = useState<CardStatus[]>(() => 
@@ -245,22 +247,22 @@ export function StudySession({ flashcards, onReset }: StudySessionProps) {
       <div className="space-y-6 text-center">
         <Celebration isActive={allComplete} />
         <div className="rounded-xl border border-green-500/30 bg-green-500/10 p-8">
-          <h2 className="text-2xl font-bold text-foreground mb-2">Session Complete!</h2>
+          <h2 className="text-2xl font-bold text-foreground mb-2">{t('complete.title')}</h2>
           <p className="text-muted-foreground mb-4">
-            You&apos;ve reviewed all {flashcards.length} cards.
+            {t('complete.reviewed', { count: flashcards.length })}
           </p>
           <p className="text-lg font-medium text-green-600 dark:text-green-400">
-            {correctCount} / {flashcards.length} marked as correct
+            {t('complete.score', { correct: correctCount, total: flashcards.length })}
           </p>
         </div>
         <div className="flex justify-center gap-3">
           <Button variant="outline" onClick={onReset}>
             <RotateCcw className="h-4 w-4 mr-2" />
-            New Set
+            {t('complete.newSet')}
           </Button>
           <Button onClick={exportToMarkdown}>
             <Download className="h-4 w-4 mr-2" />
-            Export MD
+            {t('complete.exportMd')}
           </Button>
         </div>
       </div>
@@ -273,11 +275,11 @@ export function StudySession({ flashcards, onReset }: StudySessionProps) {
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
           <h2 className="text-xl font-semibold text-foreground">
-            {isReviewMode ? 'Review Mode' : 'Study Session'}
+            {isReviewMode ? t('study.reviewMode') : t('study.studySession')}
           </h2>
           <p className="text-sm text-muted-foreground">
-            Card {currentPosition + 1} of {totalInCurrentMode}
-            {isReviewMode && ` (reviewing ${reviewCards.length} cards)`}
+            {t('study.cardOf', { current: currentPosition + 1, total: totalInCurrentMode })}
+            {isReviewMode && ` ${t('study.reviewing', { count: reviewCards.length })}`}
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
@@ -286,19 +288,19 @@ export function StudySession({ flashcards, onReset }: StudySessionProps) {
             size="sm"
             onClick={() => setVoiceMode(!voiceMode)}
             disabled={!isSupported}
-            title={!isSupported ? 'Voice mode not supported in this browser' : voiceMode ? 'Disable voice mode' : 'Enable voice mode'}
+            title={!isSupported ? t('voice.notSupported') : t('study.voice')}
             className={!isSupported ? 'opacity-50' : ''}
           >
             <Volume2 className="h-4 w-4 mr-1 sm:mr-2" />
-            <span className="text-xs sm:text-sm">{voiceMode ? 'Voice' : 'Voice'}</span>
+            <span className="text-xs sm:text-sm">{t('study.voice')}</span>
           </Button>
           <Button variant="outline" size="sm" onClick={onReset}>
             <RotateCcw className="h-4 w-4 mr-1 sm:mr-2" />
-            <span className="text-xs sm:text-sm">New</span>
+            <span className="text-xs sm:text-sm">{t('study.new')}</span>
           </Button>
           <Button size="sm" onClick={exportToMarkdown}>
             <Download className="h-4 w-4 mr-1 sm:mr-2" />
-            <span className="text-xs sm:text-sm">Export</span>
+            <span className="text-xs sm:text-sm">{t('study.export')}</span>
           </Button>
         </div>
       </div>
@@ -307,9 +309,9 @@ export function StudySession({ flashcards, onReset }: StudySessionProps) {
       <div className="space-y-2">
         <Progress value={progress} className="h-2" />
         <div className="flex justify-between text-xs text-muted-foreground">
-          <span className="text-green-600 dark:text-green-400">{correctCount} correct</span>
-          <span className="text-amber-600 dark:text-amber-400">{reviewCount} to review</span>
-          <span>{unseenCount} remaining</span>
+          <span className="text-green-600 dark:text-green-400">{correctCount} {t('study.correct')}</span>
+          <span className="text-amber-600 dark:text-amber-400">{reviewCount} {t('study.toReview')}</span>
+          <span>{unseenCount} {t('study.remaining')}</span>
         </div>
       </div>
 
@@ -334,7 +336,7 @@ export function StudySession({ flashcards, onReset }: StudySessionProps) {
           >
             <div className="h-full rounded-lg bg-card p-5 flex flex-col">
               <span className="text-xs font-medium text-muted-foreground mb-2">
-                Card {actualIndex + 1} - Question
+                {t('study.cardOf', { current: actualIndex + 1, total: flashcards.length })} - {t('study.question')}
               </span>
               <div className="flex-1 overflow-y-auto flex items-center justify-center">
                 <p className="text-center text-lg text-foreground font-medium">
@@ -342,7 +344,7 @@ export function StudySession({ flashcards, onReset }: StudySessionProps) {
                 </p>
               </div>
               <span className="text-xs text-muted-foreground text-center mt-2">
-                {voiceMode ? 'Speak your answer, then check' : 'Click to reveal answer'}
+                {voiceMode ? t('study.speakAnswer') : t('study.clickToReveal')}
               </span>
             </div>
           </div>
@@ -361,7 +363,7 @@ export function StudySession({ flashcards, onReset }: StudySessionProps) {
           >
             <div className="h-full rounded-lg bg-card p-5 flex flex-col">
               <span className="text-xs font-medium text-primary mb-2">
-                Card {actualIndex + 1} - Answer
+                {t('study.cardOf', { current: actualIndex + 1, total: flashcards.length })} - {t('study.answer')}
               </span>
               <div className="flex-1 overflow-y-auto flex items-center justify-center">
                 <p className="text-center text-foreground">
@@ -369,7 +371,7 @@ export function StudySession({ flashcards, onReset }: StudySessionProps) {
                 </p>
               </div>
               <span className="text-xs text-muted-foreground text-center mt-2">
-                Click to see question
+                {t('study.clickToSeeQuestion')}
               </span>
             </div>
           </div>
@@ -390,12 +392,12 @@ export function StudySession({ flashcards, onReset }: StudySessionProps) {
               {isLoadingHint ? (
                 <>
                   <Spinner className="h-4 w-4 mr-2" />
-                  Getting hint...
+                  {t('study.gettingHint')}
                 </>
               ) : (
                 <>
                   <Lightbulb className="h-4 w-4 mr-2" />
-                  Get a Hint
+                  {t('study.getHint')}
                 </>
               )}
             </Button>
@@ -414,7 +416,7 @@ export function StudySession({ flashcards, onReset }: StudySessionProps) {
       {voiceMode && !isFlipped && (
         <div className="space-y-4 rounded-lg border border-border bg-muted/30 p-4">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium">Listen and Correct Me</span>
+            <span className="text-sm font-medium">{t('voice.title')}</span>
             <Button
               size="sm"
               variant={isListening ? 'destructive' : 'default'}
@@ -424,12 +426,12 @@ export function StudySession({ flashcards, onReset }: StudySessionProps) {
               {isListening ? (
                 <>
                   <MicOff className="h-4 w-4 mr-2" />
-                  Stop
+                  {t('voice.stop')}
                 </>
               ) : (
                 <>
                   <Mic className="h-4 w-4 mr-2" />
-                  Start Speaking
+                  {t('voice.start')}
                 </>
               )}
             </Button>
@@ -439,7 +441,7 @@ export function StudySession({ flashcards, onReset }: StudySessionProps) {
           {(transcript || isListening) && (
             <div className="rounded-md border border-border bg-background p-3 min-h-[60px]">
               <p className="text-sm text-foreground">
-                {transcript || (isListening ? 'Listening...' : '')}
+                {transcript || (isListening ? t('voice.listening') : '')}
               </p>
             </div>
           )}
@@ -452,7 +454,7 @@ export function StudySession({ flashcards, onReset }: StudySessionProps) {
           {isEvaluating && (
             <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
               <Spinner className="h-4 w-4" />
-              Evaluating your answer...
+              {t('voice.evaluating')}
             </div>
           )}
 
@@ -469,16 +471,16 @@ export function StudySession({ flashcards, onReset }: StudySessionProps) {
                   'font-medium',
                   evaluation.isCorrect ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'
                 )}>
-                  {evaluation.isCorrect ? 'Good job!' : 'Keep practicing'}
+                  {evaluation.isCorrect ? t('voice.goodJob') : t('voice.keepPracticing')}
                 </span>
                 <span className="text-sm font-medium">
-                  Score: {evaluation.score}/100
+                  {t('voice.score')} {evaluation.score}/100
                 </span>
               </div>
               <p className="text-sm text-foreground">{evaluation.feedback}</p>
               {evaluation.missingPoints && evaluation.missingPoints.length > 0 && (
                 <div className="text-sm">
-                  <p className="font-medium text-muted-foreground">Missing points:</p>
+                  <p className="font-medium text-muted-foreground">{t('voice.missingPoints')}</p>
                   <ul className="list-disc list-inside text-muted-foreground">
                     {evaluation.missingPoints.map((point, i) => (
                       <li key={i}>{point}</li>
@@ -492,7 +494,7 @@ export function StudySession({ flashcards, onReset }: StudySessionProps) {
                 className="mt-2"
                 onClick={() => setIsFlipped(true)}
               >
-                Show Correct Answer
+                {t('voice.showAnswer')}
               </Button>
             </div>
           )}
@@ -509,14 +511,14 @@ export function StudySession({ flashcards, onReset }: StudySessionProps) {
             onClick={() => markCard('review')}
           >
             <RefreshCw className="h-4 w-4 mr-2" />
-            Ask Again
+            {t('study.askAgain')}
           </Button>
           <Button
             className="bg-green-600 hover:bg-green-700 text-white"
             onClick={() => markCard('correct')}
           >
             <Check className="h-4 w-4 mr-2" />
-            Correct
+            {t('study.markCorrect')}
           </Button>
         </div>
 
@@ -529,12 +531,12 @@ export function StudySession({ flashcards, onReset }: StudySessionProps) {
             disabled={currentPosition === 0}
           >
             <ChevronLeft className="h-4 w-4 mr-1" />
-            Previous
+            {t('study.previous')}
           </Button>
 
           <span className="text-xs text-muted-foreground">
-            {cardStatuses[actualIndex] === 'unseen' ? 'Not marked yet' : 
-             cardStatuses[actualIndex] === 'correct' ? 'Marked correct' : 'Marked for review'}
+            {cardStatuses[actualIndex] === 'unseen' ? t('study.notMarked') : 
+             cardStatuses[actualIndex] === 'correct' ? t('study.markedCorrect') : t('study.markedReview')}
           </span>
 
           <Button
@@ -543,7 +545,7 @@ export function StudySession({ flashcards, onReset }: StudySessionProps) {
             onClick={goToNext}
             disabled={currentPosition === totalInCurrentMode - 1}
           >
-            Next
+            {t('study.next')}
             <ChevronRight className="h-4 w-4 ml-1" />
           </Button>
         </div>
@@ -551,14 +553,14 @@ export function StudySession({ flashcards, onReset }: StudySessionProps) {
 
       <p className="text-center text-sm text-muted-foreground">
         {voiceMode 
-          ? 'Speak your answer, then mark as Correct or Ask Again to advance'
-          : 'Click card to flip, then mark as Correct or Ask Again to advance'}
+          ? t('study.voiceInstruction')
+          : t('study.flipInstruction')}
       </p>
       
       {/* Hint about completion */}
       {unseenCount > 0 && unseenCount < flashcards.length && (
         <p className="text-center text-xs text-amber-600 dark:text-amber-400">
-          Mark all cards to complete the session. {unseenCount} card{unseenCount !== 1 ? 's' : ''} remaining.
+          {t('study.completionHint', { count: unseenCount })}
         </p>
       )}
     </div>

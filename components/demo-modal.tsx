@@ -4,31 +4,33 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog'
 import { Play } from 'lucide-react'
+import { useLanguage } from '@/contexts/language-context'
 
 export function DemoModal() {
   const [isOpen, setIsOpen] = useState(false)
+  const { t } = useLanguage()
 
-  // Demo video script/storyboard text
+  // Demo video script/storyboard text - using translations
   const demoSteps = [
     {
-      title: 'Step 1: Paste Your Content',
-      description: 'Copy any study material - lecture notes, Wikipedia articles, textbook chapters, or even URLs. Our AI works with any text format.',
+      title: t('demo.step1.title'),
+      description: t('demo.step1.desc'),
     },
     {
-      title: 'Step 2: Choose Card Count',
-      description: 'Select how many flashcards you want (3-30). More cards give deeper coverage, fewer cards focus on key concepts.',
+      title: t('demo.step2.title'),
+      description: t('demo.step2.desc'),
     },
     {
-      title: 'Step 3: Generate with AI',
-      description: 'Click "Generate Flashcards" and watch as Gemini AI creates perfectly structured Q&A pairs from your content.',
+      title: t('demo.step3.title'),
+      description: t('demo.step3.desc'),
     },
     {
-      title: 'Step 4: Study Interactively',
-      description: 'Flip through cards, mark them as correct or needing review. Use voice mode to practice speaking answers out loud!',
+      title: t('demo.step4.title'),
+      description: t('demo.step4.desc'),
     },
     {
-      title: 'Step 5: Review & Export',
-      description: 'Track your progress with the visual dashboard. Export your cards to Markdown for offline study or sharing.',
+      title: t('demo.step5.title'),
+      description: t('demo.step5.desc'),
     },
   ]
 
@@ -37,14 +39,14 @@ export function DemoModal() {
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
           <Play className="h-4 w-4 mr-2" />
-          Watch Demo
+          {t('demo.button')}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl">How Smart Study Cards Works</DialogTitle>
+          <DialogTitle className="text-xl">{t('demo.title')}</DialogTitle>
           <DialogDescription>
-            Transform any content into effective study flashcards in seconds
+            {t('demo.description')}
           </DialogDescription>
         </DialogHeader>
         
@@ -56,9 +58,9 @@ export function DemoModal() {
                 <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
                   <Play className="h-8 w-8 text-primary" />
                 </div>
-                <p className="text-lg font-medium text-foreground">Demo Video Coming Soon</p>
+                <p className="text-lg font-medium text-foreground">{t('demo.videoPlaceholder')}</p>
                 <p className="text-sm text-muted-foreground max-w-md">
-                  Follow the step-by-step guide below to learn how to create AI-powered flashcards from any content.
+                  {t('demo.videoSubtext')}
                 </p>
               </div>
             </div>
@@ -66,7 +68,7 @@ export function DemoModal() {
 
           {/* Step by step guide */}
           <div className="space-y-4">
-            <h3 className="font-semibold text-foreground">Quick Start Guide</h3>
+            <h3 className="font-semibold text-foreground">{t('demo.quickStart')}</h3>
             <div className="space-y-3">
               {demoSteps.map((step, index) => (
                 <div 
@@ -87,11 +89,11 @@ export function DemoModal() {
 
           {/* Tips */}
           <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4">
-            <h4 className="font-medium text-amber-700 dark:text-amber-400 mb-2">Pro Tips</h4>
+            <h4 className="font-medium text-amber-700 dark:text-amber-400 mb-2">{t('demo.proTips')}</h4>
             <ul className="text-sm text-amber-700/80 dark:text-amber-400/80 space-y-1 list-disc list-inside">
-              <li>For best results, use well-structured content with clear concepts</li>
-              <li>Try the voice mode to practice explaining answers in your own words</li>
-              <li>Export to Markdown for use with Anki or other flashcard apps</li>
+              <li>{t('demo.tip1')}</li>
+              <li>{t('demo.tip2')}</li>
+              <li>{t('demo.tip3')}</li>
             </ul>
           </div>
         </div>
